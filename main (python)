@@ -1,0 +1,68 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Paramètres
+g = 9.81  # accélération due à la gravité en m/s²
+L = 2.0   # longueur de la corde de la balançoire en mètres
+m = 1.0   # masse de l'enfant en kg
+
+# Temps
+tmin = 0
+tmax = 10
+dt = 0.01
+t = np.arange(tmin, tmax, dt)
+
+# Conditions initiales pour theta0 en degrés, converties en radians pour les calculs
+theta0_degrees = [5, 30]  # Valeurs initiales de theta0 en degrés...
+theta0_values = [np.radians(theta) for theta in theta0_degrees]  # ...Converti en radians
+
+# Création des graphiques
+fig, axs = plt.subplots(2, 2, figsize=(14, 12))
+
+for idx, theta0 in enumerate(theta0_values):
+    # Approximation des petits angles (solution théorique)
+    omega = np.sqrt(g / L)
+    theta_small_angle = theta0 * np.cos(omega * t)
+    v_small_angle = -theta0 * omega * np.sin(omega * t)
+    Ec_small_angle = 0.5 * m * (L * v_small_angle) ** 2
+    Ep_small_angle = m * g * L * (1 - np.cos(theta_small_angle))
+
+    # Solution approchée numériquement sans approximation des petits angles
+    theta = np.zeros_like(t)
+    omega_num = np.zeros_like(t)
+    theta[0] = theta0
+
+    for i in range(1, len(t)):
+        omega_num[i] = omega_num[i-1] - (g / L) * np.sin(theta[i-1]) * dt
+        theta[i] = theta[i-1] + omega_num[i] * dt
+
+    v_num = omega_num * L
+    Ec_num = 0.5 * m * v_num ** 2
+    Ep_num = m * g * L * (1 - np.cos(theta))
+
+
+
+    # Graphique de l'énergie cinétique
+    axs[idx, 0].plot(t, Ec_small_angle, 'r-', label='E_c (petits angles)')
+    axs[idx, 0].plot(t, Ec_num, 'b--', label='E_c (numérique)')
+    axs[idx, 0].set_xlabel('Temps (s)')
+    axs[idx, 0].set_ylabel('Énergie cinétique (J)')
+    axs[idx, 0].legend(loc='upper right', fontsize='small')
+
+    # Conversion de theta0 de radians en degrés pour l'affichage dans le titre
+    axs[idx, 0].set_title(f'Énergie cinétique vs Temps (theta0 = {theta0_degrees[idx]:.1f} degrés)', fontsize=12)
+
+    # Graphique de l'énergie potentielle
+    axs[idx, 1].plot(t, Ep_small_angle, 'g-', label='E_p (petits angles)')
+    axs[idx, 1].plot(t, Ep_num, 'm--', label='E_p (numérique)')
+    axs[idx, 1].set_xlabel('Temps (s)')
+    axs[idx, 1].set_ylabel('Énergie potentielle (J)')
+    axs[idx, 1].legend(loc='upper right', fontsize='small')
+
+    # Conversion de theta0 de radians en degrés pour l'affichage dans le titre
+    axs[idx, 1].set_title(f'Énergie potentielle vs Temps (theta0 = {theta0_degrees[idx]:.1f} degrés)', fontsize=12)
+
+plt.tight_layout()
+plt.show()
+
+#Fin !
